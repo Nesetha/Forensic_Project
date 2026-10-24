@@ -233,3 +233,8 @@ The notebook uses Google Colab upload and download utilities. Running it in a lo
 - **Semester:** Fall 2026-27
 - **Professor:** Dr. S. Johanan Joysingh
 
+## 🌐 Live Project Portfolio
+
+**[Visit the Forensic Analytics Portfolio](https://nesetha.github.io/Forensic_Project/)**
+
+Explore the project overview, forensic methodology, knowledge graph, risk analysis, selected investigation cases, and evaluation results.
