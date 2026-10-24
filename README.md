@@ -2,7 +2,7 @@
 
 Developed as part of the course on "Forensic Analytics" at Vellore Institute of Technology, Chennai.
 
-by Nesetha J C, Hariharan M
+by **Nesetha J C, Hariharan M**
 
 **Subject Code:** CSE4074  
 **Semester:** Fall 2026-27  
@@ -10,49 +10,110 @@ by Nesetha J C, Hariharan M
 
 ---
 
-## Project Overview
+## 1. Project Overview
 
-This project develops an explainable procurement-investigation framework that combines forensic screening methods, relationship-aware knowledge graph analysis, evidence convergence, and a weighted investigation-priority score. It is designed to identify procurement records that warrant further examination, not to declare that a transaction is fraudulent.
+Procurement systems generate interconnected records involving purchase orders (POs), suppliers, employees, invoices, and payments. Analysing transactions independently may fail to reveal unusual financial patterns, repeated billing, concentrated employee–supplier relationships, or suspicious timing patterns.
 
-The project uses California Statewide Procurement and Contracting System (SCPRS) purchase-order data from 2012–2015 as the real procurement backbone. Because the source data does not contain complete employee, invoice, and payment relationships, controlled synthetic layers are created for those entities. Six controlled scenarios are injected to test whether the corresponding forensic rules can identify their intended patterns.
+This project presents an explainable procurement fraud investigation framework that combines forensic analytics, knowledge graph modelling, evidence convergence, and multi-layer risk scoring. The framework examines procurement records using multiple complementary indicators and identifies cases that warrant further investigation. It also provides traceability between related entities and explains why a transaction receives a particular investigation-priority score.
 
-> **Important interpretation:** An anomaly is not proof of fraud. The risk score represents investigation priority, not a probability of fraud or a legal finding. The controlled-case detection result is not real-world fraud-detection accuracy.
+The system is designed as an investigation-support tool. A flagged transaction is not automatically fraudulent, and the risk score is not a probability of fraud.
 
-## Objectives
+## 2. Problem Statement
 
-- Prepare and validate procurement data for forensic analysis.
-- Create stable identifiers and a canonical purchase-order model.
-- Add controlled synthetic employee, invoice, and payment relationships where source relationships are unavailable.
-- Apply complementary forensic screening methods and represent entities and relationships in a knowledge graph.
-- Combine risk indicators into a transparent, weighted investigation-priority score.
-- Reconstruct selected cases and evaluate the rules against known controlled scenarios.
+Traditional transaction-level analysis may identify unusual purchase values or invoice amounts but can overlook relationships among employees, suppliers, purchase orders, invoices, and payments. Investigators need a systematic way to combine financial, behavioural, and temporal indicators with relationship context and explain why particular cases should be prioritised for review.
 
-## Dataset and preparation
+This project addresses that need through complementary forensic screening methods, a directed knowledge graph, evidence convergence, and transparent weighted risk scoring.
 
-- **Source:** California Statewide Procurement and Contracting System (SCPRS) Purchase Order Data, 2012–2015.
-- **Original data:** 344,504 records and 32 columns.
-- **Analytical line items:** 318,962 after filtering missing or invalid purchase dates; 25,542 records were removed by this date-validity filter.
-- **Unique purchase orders:** 187,080.
-- **Departments:** 108.
-- **Suppliers in the analytical subset:** 24,260.
+## 3. Objectives
 
-The notebook cleans date and numeric fields, checks data quality, resolves entities, constructs a PO-level baseline, and builds synthetic employee/invoice/payment layers. Missing monetary values are not treated as zero. The source dataset itself is not included in this repository; users must obtain it from its authorized source and comply with its terms of use.
+- Analyse and prepare real procurement data for forensic investigation.
+- Create consistent entity identifiers and a purchase-order-level analytical model.
+- Add clearly identified synthetic employee, invoice, and payment layers where the source data lacks the required relationships.
+- Implement eight complementary forensic screening methods.
+- Create a knowledge graph connecting employees, suppliers, purchase orders, invoices, and payments.
+- Combine multiple indicators through evidence convergence and weighted investigation-priority scoring.
+- Explain selected critical and high-priority cases using their contributing indicators and related entities.
+- Evaluate the intended detection rules using controlled scenarios with known ground truth.
 
-## Methodology
+## 4. Dataset and Data Preparation
 
-1. **Dataset loading and profiling** — inspect columns, data types, missing values, date range, and procurement statistics.
-2. **Cleaning and preprocessing** — normalize text and supplier codes, convert dates and monetary fields, and retain records with valid purchase dates in the study period.
-3. **Entity resolution and baseline construction** — assign identifiers to line items, purchase orders, departments, and suppliers; validate mappings and build a canonical PO table.
-4. **Synthetic relationship layers** — assign POs to 350 synthetic employees across 108 departments; create invoice and payment records with controlled timing and amount relationships.
-5. **Controlled scenario injection** — create five known cases for each of six scenario types, with a separate ground-truth registry.
-6. **Forensic analytics** — run Benford's Law screening, duplicate-invoice detection, statistical outlier analysis, employee–vendor concentration analysis, temporal anomaly analysis, PO–invoice price variance analysis, split-purchase analysis, and round-number analysis.
-7. **Knowledge graph and network analysis** — construct a directed graph of Employee, Supplier, Purchase Order, Invoice, and Payment entities and their relationships; attach forensic attributes to relevant nodes.
-8. **Evidence convergence and risk scoring** — combine indicators using predefined weights, categorize investigation priority, and reconstruct selected cases.
-9. **Controlled evaluation and visualization** — compare the primary rule signals against the 30 controlled ground-truth cases and visualize the findings.
+### 4.1 Original Dataset
 
-## Knowledge graph
+The project uses the **California Statewide Procurement and Contracting System (SCPRS) Purchase Order Data, 2012–2015** as its real procurement data backbone.
 
-The graph models five entity types: **Employee, Supplier, Purchase Order, Invoice, and Payment**. Its main directed relationships are:
+The original dataset contains 344,504 records and 32 columns. Relevant information includes purchase-order details, supplier information, department, quantity, unit price, total price, purchase date, and fiscal year.
+
+| Dataset measure | Count |
+|---|---:|
+| Original records | 344,504 |
+| Original columns | 32 |
+| Analytical line items after purchase-date filtering | 318,962 |
+| Records removed by purchase-date filtering | 25,542 |
+| Unique purchase orders | 187,080 |
+| Departments | 108 |
+| Suppliers in the analytical subset | 24,260 |
+
+### 4.2 Data Preparation
+
+The notebook profiles the data, processes date and numeric fields, validates identifiers, handles missing values according to their analytical role, and creates consistent identifiers for line items, purchase orders, departments, and suppliers.
+
+Records with missing or invalid purchase dates were excluded because temporal analysis, chronological relationships, and 30-day split-purchase checks require valid dates. Missing monetary values are not automatically replaced with zero.
+
+### 4.3 Synthetic Data Layers
+
+The original procurement data does not contain all the employee, invoice, and payment relationships needed for the proposed investigation workflow. Therefore, controlled synthetic layers were created:
+
+- 350 synthetic employees across 108 departments.
+- Invoice records linked to purchase orders.
+- Payment records linked to original invoices.
+- Five additional duplicate invoices for controlled testing.
+- A separate ground-truth registry for six controlled scenario types, with five cases per scenario.
+
+These synthetic layers support relationship-based investigation and controlled testing. They are not original SCPRS records and are not evidence of confirmed real-world fraud.
+
+The original dataset is not included in this repository. Users should obtain it from an authorised source and follow the applicable access and redistribution terms.
+
+## 5. Methodology
+
+The project follows these major stages:
+
+1. **Data preparation:** profile, clean, and validate the procurement dataset.
+2. **Entity resolution:** create stable identifiers and construct the purchase-order-level baseline.
+3. **Synthetic data generation:** construct employee, invoice, and payment relationships.
+4. **Controlled scenario generation:** introduce six types of test scenarios with separate ground-truth records.
+5. **Forensic analytics:** run eight complementary screening methods.
+6. **Knowledge graph construction:** model entities and their relationships using NetworkX.
+7. **Evidence convergence and risk scoring:** combine applicable indicators using predefined weights.
+8. **Case investigation and evaluation:** explain selected cases and assess the rules against controlled ground truth.
+
+## 6. Forensic Analytics
+
+The framework implements eight complementary methods.
+
+| Method | Purpose |
+|---|---|
+| Benford's Law | Examines population-level deviations in leading-digit distributions. |
+| Duplicate-invoice detection | Identifies repeated supplier, invoice-date, and invoice-amount combinations. |
+| IQR statistical outlier analysis | Identifies unusually high purchase-order values relative to the population. |
+| Employee–vendor concentration analysis | Detects disproportionate employee–supplier interaction patterns. |
+| Temporal anomaly analysis | Identifies unusual concentrations of payments on particular dates. |
+| PO–invoice price variance | Flags invoice amounts that differ substantially from associated PO values. |
+| Split-purchase analysis | Identifies related sub-threshold purchases that collectively exceed a configured threshold within a time window. |
+| Round-number analysis | Flags exact round monetary amounts as a supporting screening signal. |
+
+These methods identify patterns that may require further investigation. Legitimate operational explanations must be considered before drawing conclusions.
+
+## 7. Knowledge Graph
+
+A directed graph was implemented using NetworkX to represent five entity types:
+
+- Employee
+- Supplier
+- Purchase Order
+- Invoice
+- Payment
+
+The graph contains the following principal relationships:
 
 - Employee → Purchase Order (`CREATED`)
 - Purchase Order → Supplier (`SUPPLIED_BY`)
@@ -60,9 +121,13 @@ The graph models five entity types: **Employee, Supplier, Purchase Order, Invoic
 - Invoice → Payment (`PAID_BY`)
 - Employee → Supplier (`INTERACTS_WITH`)
 
-The recorded graph contains **585,855 nodes and 836,213 edges**. It is used for traceability and relationship context; the project does not use a graph neural network to predict fraud.
+The recorded graph contains **585,855 nodes and 836,213 edges**. Forensic indicators are attached to relevant nodes to support relationship tracing and explainable case investigation.
 
-## Forensic methods and risk weights
+The graph provides relationship context; it is not a graph-neural-network fraud prediction model.
+
+## 8. Evidence Convergence and Risk Scoring
+
+The framework combines applicable indicators through predefined heuristic weights.
 
 | Risk component | Weight |
 |---|---:|
@@ -73,59 +138,99 @@ The recorded graph contains **585,855 nodes and 836,213 edges**. It is used for 
 | Temporal anomaly | 10 |
 | Split purchase | 10 |
 | Round-number signal | 5 |
-| **Maximum theoretical score** | **100** |
+| **Theoretical maximum** | **100** |
 
-The weights are transparent, predefined heuristic values; they are not learned probabilities. The score is the sum of applicable component weights, bounded between 0 and 100. Categories are Low (0–19), Moderate (20–39), High (40–59), and Critical (60–100).
+The final score is the sum of applicable component weights, bounded between 0 and 100. The weights are predefined and are not learned from labelled fraud data. They do not represent probabilities.
 
-## Key results
+| Investigation-priority category | Score range |
+|---|---:|
+| Low | 0–19 |
+| Moderate | 20–39 |
+| High | 40–59 |
+| Critical | 60–100 |
 
-- The PO-level risk assessment covers **187,080 purchase orders**.
-- Observed investigation-risk scores range from **0 to 60**; the maximum observed score is 60, even though the theoretical maximum is 100.
-- Overall risk categories: **127,408 Low (68.103%)**, **58,246 Moderate (31.134%)**, **1,425 High (0.762%)**, and **1 Critical (0.001%)**.
-- The highest-priority case is **PO_051985**, score **60 (Critical)**, with duplicate, employee–vendor concentration, temporal, and split-purchase indicators. This is a case-prioritization result, not a confirmed fraud finding.
-- **PO_008062** is a high-priority example with score **55 (High)** and statistical-outlier, duplicate-invoice, round-number, and employee–vendor-concentration indicators.
-- All **30 deliberately injected controlled cases** were detected through their intended primary forensic signals (30/30, or 100% controlled-case detection under this experiment). This does not establish real-world accuracy, precision, recall, or false-positive rate.
+The observed maximum score is 60. It is not rescaled to the theoretical maximum of 100.
 
-The broad population flags are screening candidates. For example, statistical outliers or concentrated employee–supplier relationships can arise for legitimate reasons and require contextual verification.
+## 9. Results and Discussion
 
-## Repository contents
+The final risk assessment covers **187,080 unique purchase orders**.
 
-- `Forensic_Project.ipynb` — exported Google Colab notebook containing the project workflow, analysis, case reconstruction, and visualizations.
-- `PROJECT_DOCUMENTATION.md` — standalone project explanation structured to parallel the review presentation.
-- `requirements.txt` — Python package dependencies for the main analytical libraries.
+| Category | Purchase orders | Percentage |
+|---|---:|---:|
+| Low | 127,408 | 68.103% |
+| Moderate | 58,246 | 31.134% |
+| High | 1,425 | 0.762% |
+| Critical | 1 | 0.001% |
 
-## How to run
+### Selected Investigation Cases
+
+**Critical case — PO_051985**
+
+- PO value: $777
+- Investigation-priority score: 60
+- Category: Critical
+- Contributing indicators: duplicate invoice, employee–vendor concentration, temporal anomaly, and split purchase.
+
+This case is prioritised because several indicators converge. The score does not establish fraud, and the associated transactions require documentary verification.
+
+**High-priority case — PO_008062**
+
+- PO value: $1,000,000
+- Investigation-priority score: 55
+- Category: High
+- Contributing indicators: statistical outlier, duplicate invoice, round-number amount, and employee–vendor concentration.
+
+This case warrants review of the procurement documents, duplicate evidence, supplier relationship, approvals, and payment records.
+
+### Controlled-Case Evaluation
+
+All **30 deliberately injected controlled cases** were detected through their intended primary forensic indicators, giving a 30/30 or 100% controlled-case detection rate in this designed experiment.
+
+This result validates the intended rules under controlled conditions. It is not real-world fraud-detection accuracy and does not establish precision, recall, or the false-positive rate on genuine procurement cases.
+
+## 10. Technologies Used
+
+- Python
+- Google Colab
+- Pandas and NumPy
+- NetworkX
+- Matplotlib and Seaborn, where used for visualisation
+- CSV-based data processing
+- Markdown documentation
+
+## 11. Repository Contents
+
+- `Forensic_Project.ipynb` — the Google Colab notebook containing data preparation, synthetic data generation, forensic analysis, graph construction, risk scoring, case investigation, evaluation, and data export.
+- `README.md` — project overview, methods, results, setup instructions, and limitations.
+- `PROJECT_DOCUMENTATION.md` — detailed explanation of the project workflow and findings.
+- `requirements.txt` — principal Python dependencies.
+
+## 12. How to Run
 
 1. Open `Forensic_Project.ipynb` in Google Colab.
-2. Obtain the authorized SCPRS source CSV for the 2012–2015 study period.
-3. Run the notebook cells in order.
-4. When prompted by the notebook, upload the source CSV file.
-5. Review the generated data-quality summaries, forensic indicators, graph, risk scores, controlled-case evaluation, and visualizations.
-6. The final notebook cell exports analytical CSV tables into a ZIP file for download.
+2. Obtain the authorised SCPRS Purchase Order dataset for 2012–2015.
+3. Run the notebook cells in order and upload the source CSV when prompted.
+4. Review the data preparation, entity-resolution, synthetic-data, forensic-analysis, graph, scoring, and evaluation outputs.
+5. Run the final export cell to generate a ZIP file containing derived analytical CSV files.
 
-The notebook was authored for Google Colab and uses `google.colab.files` for uploading the source CSV and downloading exported results. A local Jupyter environment would require adapting those upload/download calls.
+The notebook uses Google Colab upload and download utilities. Running it in a local Jupyter environment may require adapting those cells. Install the required dependencies from `requirements.txt` if they are not already available.
 
-## Limitations and responsible interpretation
+## 13. Limitations and Responsible Interpretation
 
-- Employee, invoice, payment, and injected scenario data are controlled synthetic additions, not original verified SCPRS relationships.
-- Controlled scenarios are designed test cases and should not be presented as real fraud cases found in the source procurement data.
-- The scoring weights are heuristic and require expert validation and sensitivity analysis before operational use.
-- Indicators such as Benford deviation, high transaction value, duplicate patterns, round numbers, and employee–vendor concentration can have legitimate explanations.
-- The framework prioritizes records for document review; it does not establish intent, collusion, loss, or legal wrongdoing.
+- Employee, invoice, payment, and injected scenario data are synthetic additions, not verified original SCPRS relationships.
+- Controlled scenarios test the intended rules but do not demonstrate performance on genuine fraud investigations.
+- Risk weights are heuristic and require expert review and sensitivity analysis.
+- High values, duplicate patterns, round amounts, temporal spikes, Benford deviations, and concentrated employee–supplier relationships can have legitimate explanations.
+- The framework does not establish intent, collusion, financial loss, or legal wrongdoing.
+- A flagged transaction is not automatically fraudulent, and a transaction with no flags is not guaranteed to be legitimate.
 
-## Team
+## 14. Team and Course Details
 
-- Nesetha J C
-- Hariharan M
-
-## Course details
-
-- Course: Forensic Analytics
-- Institution: Vellore Institute of Technology, Chennai
-- Subject Code: CSE4074
-- Semester: Fall 2026-27
-- Professor: Dr. S. Johanan Joysingh
-
-## Publication note
+- **Team members:** Nesetha J C, Hariharan M
+- **Course:** Forensic Analytics
+- **Institution:** Vellore Institute of Technology, Chennai
+- **Subject Code:** CSE4074
+- **Semester:** Fall 2026-27
+- **Professor:** Dr. S. Johanan Joysingh
 
 A paper intended for publication is not included in this repository at this stage, in accordance with the review instructions.
